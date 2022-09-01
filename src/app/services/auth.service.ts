@@ -21,6 +21,7 @@ export class AuthService {
    }
 
   logout(){
+    localStorage.removeItem('token');
 
   }
 
@@ -29,7 +30,7 @@ export class AuthService {
       ...user,
       returnSecureToken: true
     };
-    return this.http.post( 
+    return this.http.post(
       `${ this.Url }signInWithPassword?key=${ this.apiKey }`,
       authData
     ).pipe(
@@ -47,7 +48,7 @@ export class AuthService {
       ...user,
       returnSecureToken: true
     };
-    return this.http.post( 
+    return this.http.post(
       `${ this.Url }signUp?key=${ this.apiKey }`,
       authData
     ).pipe(
@@ -61,6 +62,9 @@ export class AuthService {
   private saveToken( idToken: string ){
     this.userToken = idToken;
     localStorage.setItem( 'token', idToken );
+    let today = new Date();
+    today.setSeconds( 3600);
+    localStorage.setItem('expira', today.getTime().toString() );
   }
   readToken(){
     if ( localStorage.getItem('token')){
@@ -72,6 +76,16 @@ export class AuthService {
   }
 
   isAuthenticated(): boolean {
-    return this.userToken.length > 2;
+    if ( this.userToken.length > 2 ){
+      return false;
+    }
+    const expira = Number(localStorage.getItem('expira'));
+    const expiraDate = new Date();
+    expiraDate.setTime(expira);
+    if ( expiraDate > new Date()){
+      return true
+    } else {
+      return false;
+    }
   }
 }
